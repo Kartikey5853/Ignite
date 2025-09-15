@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ignite Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0d0d0d;
+            color: #ccc;
+        }
+        
+        /* --- Top Bar --- */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px; 
+            background-color: rgba(26, 26, 26, 0.7); 
+            border-bottom: 1px solid #333;
+            backdrop-filter: blur(10px); 
+            z-index: 1001; 
+        }
+        
+        .top-bar-content {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            height: 100%;
+            padding: 0 40px;
+        }
+
+        .profile-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ff6600;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            border: 2px solid rgba(255, 153, 51, 0.5);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .profile-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- Layout --- */
+        .sidebar {
+            width: 250px;
+            background-color: #1a1a1a;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: fixed;
+            top: 50px; 
+            height: calc(100% - 50px); 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 90px 40px 40px 40px; 
+            margin-left: 250px; 
+        }
+
+        .section-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* --- Sidebar Styles --- */
+        .sidebar-header {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6600;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(255, 102, 0, 0.7);
+        }
+
+        .nav-menu { list-style: none; flex-grow: 1; padding-left:0; }
+        .nav-menu li { margin-bottom: 8px; }
+        .nav-menu li a {
+            display: block; color: #ccc; text-decoration: none; padding: 15px 20px;
+            border-radius: 10px; font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .nav-menu li a:hover { background-color: #262626; color: white; }
+        .nav-menu li a.active {
+            background: linear-gradient(90deg, #ff6600, #ff9933);
+            color: white; font-weight: bold;
+        }
+
+        .logout-btn {
+            display: block; width: 100%; padding: 14px; border: none; border-radius: 10px;
+            background: #4d2000; color: #ff9933; font-size: 1rem; font-weight: bold;
+            cursor: pointer; text-align: center; text-decoration: none; transition: 0.3s;
+        }
+        .logout-btn:hover { background: #ff6600; color: white; }
+
+        /* --- Content Styles --- */
+        .content-top-space { height: 60px; }
+        .dashboard-header { text-align: center; margin-bottom: 40px; }
+        .dashboard-header h1 { color: #ff6600; font-size: 2.5rem; margin-bottom: 5px; }
+        .dashboard-header .welcome-text { color: #aaa; margin-bottom: 30px; font-size: 1rem; }
+
+        .action-buttons { display: flex; gap: 15px; justify-content: center; }
+        .action-buttons button {
+             width: auto; padding: 12px 30px; border: 1px solid #ff6600; background: transparent;
+             color: #ff9933; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s;
+        }
+        .action-buttons button:hover {
+            background: linear-gradient(90deg, #ff6600, #ff9933);
+            color: white; box-shadow: 0 0 15px rgba(255,102,0,0.5);
+        }
+
+        .chat-area {
+            background: #1a1a1a; 
+            border-radius: 12px; 
+            padding: 25px;
+        }
+        
+        .chat-area h5, .card h5 { margin-bottom: 20px; color: #ff6600; font-size: 1.2rem; }
+        
+        .chat-container {
+            border: 1px solid #333; height: 400px; overflow-y: auto; padding: 20px;
+            border-radius: 12px; background-color: #0d0d0d; margin-bottom: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        
+        .chat-container.hidden { display: none; }
+        
+        .chat-input-container {
+            display: flex; align-items: center; max-width: 85%; margin: 0 auto;
+            background: #262626; border-radius: 50px; border: 1px solid #444;
+            padding: 5px; transition: border-color 0.3s; width: 100%;
+        }
+        .chat-input-container:focus-within { border-color: #ff6600; }
+
+        #chat-input {
+            flex-grow: 1; border: none; background: transparent; color: white;
+            padding: 10px 20px; font-size: 1rem; outline: none;
+        }
+
+        input[type="file"] {
+            width: 100%; padding: 12px; border: 1px solid #444;
+            border-radius: 8px; background: #262626; color: #ccc;
+            font-size: 0.95rem; cursor: pointer;
+        }
+
+        .chat-input-container button {
+            width: auto; min-width: auto; padding: 10px 25px; border: none; border-radius: 40px;
+            background: linear-gradient(90deg, #ff6600, #ff9933);
+            color: white; font-size: 0.9rem; font-weight: bold; cursor: pointer; flex-shrink: 0;
+        }
+        
+        .card button {
+             width: auto; min-width: 100px; padding: 12px 25px; border: none;
+             border-radius: 8px; background: linear-gradient(90deg, #ff6600, #ff9933);
+             color: white; font-size: 1rem; font-weight: bold; cursor: pointer;
+        }
+        
+        /* --- Page Section Logic --- */
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        /* Generic card for other sections */
+        .content h2 { color: #ff6600; font-size: 2rem; margin-bottom: 20px; }
+        .card { 
+            background: #1a1a1a; 
+            border-radius: 12px; 
+            padding: 25px; 
+            margin-top: 20px;
+            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+        }
+        .card p { margin-bottom: 10px; line-height: 1.6; }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .skill-badge {
+            background-color: #333;
+            color: #ff9933;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid #444;
+        }
+
+        /* --- Recommendation List Styling --- */
+        #recommendations-result h4 {
+            font-size: 1.2rem;
+            color: #ff6600;
+            margin-bottom: 15px;
+        }
+        #recommendations-result h5 {
+            color: #ff9933;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        #recommendations-result ul {
+            list-style-type: disc;
+            list-style-position: inside;
+            padding-left: 20px;
+        }
+        #recommendations-result li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        
+        /* --- Universal Animation Keyframes --- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* --- Recommendation Animation --- */
+        .animated-item {
+            opacity: 0; 
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        /* --- NEW: Profile Page Animation --- */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(255, 102, 0, 0.2);
+        }
+        
+        /* Initially hide profile elements */
+        #profile-section .card > * {
+            opacity: 0;
+        }
+        
+        /* When the profile section is active, trigger the animation */
+        #profile-section.active .card > * {
+            animation: fadeInUp 0.7s ease-out forwards;
+        }
+        
+        /* Stagger the animation for each line */
+        #profile-section.active .card h5 { animation-delay: 0.1s; }
+        #profile-section.active .card hr:nth-of-type(1) { animation-delay: 0.2s; }
+        #profile-section.active .card p:nth-of-type(1) { animation-delay: 0.3s; }
+        #profile-section.active .card p:nth-of-type(2) { animation-delay: 0.4s; }
+        #profile-section.active .card p:nth-of-type(3) { animation-delay: 0.5s; }
+        #profile-section.active .card p:nth-of-type(4) { animation-delay: 0.6s; }
+        #profile-section.active .card p:nth-of-type(5) { animation-delay: 0.7s; }
+        #profile-section.active .card p:nth-of-type(6) { animation-delay: 0.8s; }
+        #profile-section.active .card hr:nth-of-type(2) { animation-delay: 0.9s; }
+        #profile-section.active .card p:nth-of-type(7) { animation-delay: 1.0s; }
+        #profile-section.active .card p:nth-of-type(8) { animation-delay: 1.1s; }
+        #profile-section.active .card p:nth-of-type(9) { animation-delay: 1.2s; }
+
+        /* === PROFILE-SPECIFIC OVERRIDES to match screenshot === */
+        .profile-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-right: 10px;
+        }
+        .profile-hero h2 {
+            color: #ff6600;
+            font-size: 48px; /* big like screenshot */
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .profile-edit-btn {
+            background: #f5f5f5;
+            color: #111;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .profile-edit-btn:hover { transform: translateY(-2px); }
+
+        .profile-card {
+            background: #111111;
+            border-radius: 12px;
+            padding: 36px;
+            margin-top: 12px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+        }
+        .profile-name {
+            font-weight: 700;
+            color: #e9e9e9;
+            margin-bottom: 14px;
+            font-size: 1.05rem;
+        }
+        .profile-row {
+            margin: 18px 0;
+            font-size: 1rem;
+        }
+        .profile-row strong {
+            display:inline-block;
+            width: 170px;
+            color: #e6e6e6;
+            font-weight: 700;
+        }
+        .profile-row .value {
+            color: #bfbfbf;
+        }
+        .profile-divider {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin: 20px 0;
+        }
+
+        /* form inputs in edit view match screenshot dark style */
+        .profile-edit-form .form-control {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            color: #ddd;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+        }
+        .profile-edit-form label {
+            color: #bbb;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+    </style>
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="top-bar-content">
+        <div class="profile-icon">
+            {{ username[0] | upper if username }}
+        </div>
+    </div>
+</header>
+
+<div class="sidebar">
+    <div class="sidebar-header">Ignite 🔥</div>
+    <ul class="nav-menu">
+        <ul class="nav-menu">
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link" data-target="dashboard-section">Dashboard</a></li>
+                <li><a href="#" class="nav-link active" data-target="profile-section">Profile</a></li>
+                <li><a href="#" class="nav-link" data-target="skills-section">Skills</a></li>
+                <li><a href="#" class="nav-link" data-target="recommendation-section">Recommendations</a></li>
+                <li><a href="#" class="nav-link" data-target="resume-section">Resume</a></li>
+                <li><a href="{{ url_for('roadmap') }}" class="{{ 'active' if request.endpoint == 'roadmap' else '' }}">Roadmap</a></li>
+
+            </ul>
+    
+</ul>
+    </ul>
+    <div class="mt-auto">
+        <a href="{{ url_for('login') }}" class="logout-btn">Log Out</a>
+    </div>
+</div>
+
+<div class="content">
+    
+    <div id="dashboard-section" class="page-section">
+        <div class="section-container">
+            <div class="content-top-space"></div>
+            <div class="dashboard-header">
+                <h1>Hello, {{ username }}!</h1>
+                <p class="welcome-text">Welcome back to your career launchpad.</p>
+                <div class="action-buttons">
+                    <button id="explore-jobs-btn">Explore Jobs</button>
+                    <button id="find-mentors-btn">Find Mentors</button>
+                    <button id="set-goals-btn">Set Goals</button>
+                    
+                </div>
+            </div>
+            
+                
+                <div class="chat-container hidden" id="chat-messages">
+                    <p><strong>AI:</strong> How can I assist you with your career goals today?</p>
+                </div>
+                <form id="chat-form" class="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="Ask anything..." required>
+                    <button type="submit" id="send-btn">Send</button>
+                </form>
+            
+        </div>
+    </div>
+
+    <!-- ====== PROFILE SECTION (REPLACED ONLY THIS) ====== -->
+    <div id="profile-section" class="page-section active">
+        <div class="section-container">
+            <div class="profile-hero">
+                <h2>Your Professional Profile</h2>
+                <button id="edit-profile-btn" class="profile-edit-btn">Edit Profile</button>
+            </div>
+
+            <!-- Display view -->
+            <div id="profile-display-view" class="profile-card card">
+                <div class="profile-name"><span data-key="name">{{ profile_data.name or username or 'Name Not Found' }}</span></div>
+
+                <div class="profile-divider"></div>
+
+                <div class="profile-row"><strong>Email:</strong> <span class="value" data-key="email">{{ profile_data.emails[0] if profile_data.emails else 'N/A' }}</span></div>
+                <div class="profile-row"><strong>Phone:</strong> <span class="value" data-key="phone">{{ profile_data.phones[0] if profile_data.phones else 'N/A' }}</span></div>
+                <div class="profile-row">
+                    <strong>Total Experience:</strong> 
+                    <span class="value" data-key="experience">
+                        {{ profile_data.get('experience', {}).get('total_years') or 0 }}
+                    </span> years
+                </div>
+
+                <div class="profile-divider"></div>
+
+                <div class="profile-row"><strong>Location:</strong> <span class="value" data-key="location">{{ user.location or 'N/A' }}</span></div>
+                <div class="profile-row"><strong>Education:</strong> <span class="value" data-key="educationLevel">{{ user.educationLevel or 'N/A' }}</span></div>
+                <div class="profile-row"><strong>Field of Study:</strong> <span class="value" data-key="fieldOfStudy">{{ user.fieldOfStudy or 'N/A' }}</span></div>
+                <div class="profile-row"><strong>Current Role:</strong> <span class="value" data-key="currentRole">{{ user.currentRole or 'N/A' }}</span></div>
+
+                <div class="profile-divider"></div>
+
+                <div class="profile-row"><strong>Career Preferences:</strong> <span class="value" data-key="careerPreferences">{{ user.careerPreferences or 'N/A' }}</span></div>
+                <div class="profile-row"><strong>Interests:</strong> <span class="value" data-key="interests">{{ user.interests or 'N/A' }}</span></div>
+                <div class="profile-row"><strong>Short Term Goals:</strong> <span class="value" data-key="shortTermGoals">{{ user.shortTermGoals or 'N/A' }}</span></div>
+                <div class="profile-row"><strong>Long Term Goals:</strong> <span class="value" data-key="longTermGoals">{{ user.longTermGoals or 'N/A' }}</span></div>
+            </div>
+
+            <!-- Edit view -->
+            <form id="profile-edit-view" class="profile-card card" style="display:none;">
+                <h5 style="color:#ff6600;margin-bottom:16px;">Edit Your Profile</h5>
+                <div class="profile-form-grid profile-edit-form">
+                    <div class="form-group">
+                        <label for="edit-location">Location</label>
+                        <input id="edit-location" class="form-control" type="text" value="{{ user.location or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-currentRole">Current Role</label>
+                        <input id="edit-currentRole" class="form-control" type="text" value="{{ user.currentRole or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-educationLevel">Education Level</label>
+                        <input id="edit-educationLevel" class="form-control" type="text" value="{{ user.educationLevel or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-fieldOfStudy">Field of Study</label>
+                        <input id="edit-fieldOfStudy" class="form-control" type="text" value="{{ user.fieldOfStudy or '' }}">
+                    </div>
+                </div>
+
+                <div style="margin-top:18px;">
+                    <div class="form-group">
+                        <label for="edit-interests">Interests</label>
+                        <textarea id="edit-interests" class="form-control" rows="2">{{ user.interests or '' }}</textarea>
+                    </div>
+                    <div class="form-group" style="margin-top:12px;">
+                        <label for="edit-careerPreferences">Career Preferences</label>
+                        <textarea id="edit-careerPreferences" class="form-control" rows="2">{{ user.careerPreferences or '' }}</textarea>
+                    </div>
+                    <div class="form-group" style="margin-top:12px;">
+                        <label for="edit-shortTermGoals">Short Term Goals</label>
+                        <textarea id="edit-shortTermGoals" class="form-control" rows="2">{{ user.shortTermGoals or '' }}</textarea>
+                    </div>
+                    <div class="form-group" style="margin-top:12px;">
+                        <label for="edit-longTermGoals">Long Term Goals</label>
+                        <textarea id="edit-longTermGoals" class="form-control" rows="2">{{ user.longTermGoals or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div id="profile-edit-actions" class="profile-edit-actions">
+                    <button type="submit" id="save-profile-btn" style="background:linear-gradient(90deg,#ff6600,#ff9933); color:white; padding:10px 18px; border-radius:8px; border:none;">Save Changes</button>
+                    <button type="button" id="cancel-edit-btn" style="background:#333; color:#ccc; padding:10px 18px; border-radius:8px; border:none;">Cancel</button>
+                </div>
+                <p id="update-status" style="margin-top: 15px;"></p>
+            </form>
+        </div>
+    </div>
+    <!-- ====== END PROFILE SECTION ====== -->
+
+    <div id="skills-section" class="page-section">
+        <div class="section-container">
+            <h2>Your Professional Skills</h2>
+            <div class="card">
+
+            {% if profile_data and profile_data.skills %}
+                <h5>Skills from your latest resume:</h5>
+                <div class="skills-container">
+                    {% for skill in profile_data.skills %}
+                        <span class="skill-badge">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <h5>No Skills Data Found</h5>
+                <p>We couldn't find any skills in your profile. Please analyze a resume that lists your skills.</p>
+            {% endif %}
+
+
+            <hr style="margin: 25px 0;"> <div>
+                <h5>Skill Gap Analysis</h5>
+                <p>Analyze your skills against your career goals to identify what you should learn next.</p>
+                <button id="analyze-gap-btn" class="action-button">Re-Analyze Skill Gap</button>
+            </div>
+            
+            <div id="missing-skills-container" style="margin-top: 20px;">
+                
+                {% if profile_data.missing_skills %}
+                    <h6>Previously identified skills to learn:</h6>
+                    <div class="skills-container">
+                        {% for skill in profile_data.missing_skills %}
+                            <span class="skill-badge-missing">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="recommendation-section" class="page-section">
+        <div class="section-container">
+            <h2>Personalized Recommendations</h2>
+            <div class="card">
+                <h5>Get Your Recommendations</h5>
+                <p>Click the button below to get personalized job and course recommendations.</p>
+            
+                <button id="generate-btn">Generate Recommendations</button>
+            
+                <p id="loading" style="display:none;">⏳ Generating recommendations...</p>
+            
+                <div id="recommendations-result" style="margin-top:15px;"></div>
+            </div>
+        </div>
+      </div>
+    
+    <div id="resume-section" class="page-section">
+        <div class="section-container">
+            <h2>Resume Analysis</h2>
+            <div class="card">
+                <h5>Analyze Your Resume</h5>
+                <form id="resume-form">
+                    <input type="file" name="resume" required>
+                    <button type="submit">Analyze</button>
+                </form>
+                <div id="resume-result" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Tab Navigation Logic ---
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+        const sections = document.querySelectorAll('.page-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                navLinks.forEach(nav => nav.classList.remove('active'));
+                sections.forEach(section => section.classList.remove('active'));
+                this.classList.add('active');
+                const targetId = this.getAttribute('data-target');
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    // This is where the magic happens for the profile animation.
+                    // By adding the 'active' class, our CSS animations are triggered.
+                    targetSection.classList.add('active');
+                }
+            });
+        });
+
+        // --- Chat Bot & Button-to-Chat Logic ---
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const exploreJobsBtn = document.getElementById('explore-jobs-btn');
+        const findMentorsBtn = document.getElementById('find-mentors-btn');
+        const setGoalsBtn = document.getElementById('set-goals-btn');
+        const sendBtn = document.getElementById('send-btn');
+
+        function triggerChat(prompt) {
+            chatInput.value = prompt;
+            sendBtn.click();
+        }
+
+        if (exploreJobsBtn) {
+            exploreJobsBtn.addEventListener('click', () => {
+                triggerChat('Based on my resume, find relevant jobs for me');
+            });
+        }
+        if (findMentorsBtn) {
+            findMentorsBtn.addEventListener('click', () => {
+                triggerChat('Can you suggest some potential mentors in my field?');
+            });
+        }
+        if (setGoalsBtn) {
+            setGoalsBtn.addEventListener('click', () => {
+                triggerChat('Help me set 3 short-term and 1 long-term career goal');
+            });
+        }
+
+        if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const userMessage = chatInput.value;
+                if (userMessage.trim() === '') return;
+                if (chatMessages.classList.contains('hidden')) {
+                    chatMessages.classList.remove('hidden');
+                }
+                const userMessageDiv = document.createElement('p');
+                userMessageDiv.innerHTML = `<strong>You:</strong> ${userMessage}`;
+                chatMessages.appendChild(userMessageDiv);
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                const thinkingDiv = document.createElement('p');
+                thinkingDiv.innerHTML = `<strong>AI:</strong> Thinking...`;
+                chatMessages.appendChild(thinkingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userMessage }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    thinkingDiv.innerHTML = `<strong>AI:</strong> ${data.response}`;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .catch(error => {
+                    thinkingDiv.innerHTML = `<strong>AI:</strong> Sorry, there was an error. Please try again.`;
+                    console.error('Error:', error);
+                });
+            });
+        }
+
+        // --- Resume Upload Logic ---
+        const resumeForm = document.getElementById('resume-form');
+        if (resumeForm) {
+            const resumeResultDiv = document.getElementById('resume-result');
+            resumeForm.addEventListener('submit', function(e) {
+                e.preventDefault(); 
+                const fileInput = resumeForm.querySelector('input[type="file"]');
+                const file = fileInput.files[0];
+                if (!file) {
+                    resumeResultDiv.innerHTML = `<p style="color: #ff6600;">Please select a file to analyze.</p>`;
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('resume', file);
+                resumeResultDiv.innerHTML = `<p>Analyzing your resume...</p>`;
+                fetch('/upload', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        resumeResultDiv.innerHTML = `<p style="color: #ff4444;"><strong>Error:</strong> ${data.error}</p>`;
+                    } 
+                    else if (data.message) {
+                        resumeResultDiv.innerHTML = `<p style="color: #00ff66;">${data.message}</p>`;
+                        setTimeout(() => { window.location.reload(); }, 2000); 
+                    }
+                })
+                .catch(error => {
+                    resumeResultDiv.innerHTML = `<p style="color: #ff4444;">A network error occurred.</p>`;
+                    console.error('Fetch Error:', error);
+                });
+            });
+        }
+
+        // --- Recommendations Logic with Animation ---
+        const generateBtn = document.getElementById("generate-btn");
+        if (generateBtn) {
+            generateBtn.addEventListener("click", async () => {
+                const loading = document.getElementById("loading");
+                const resultDiv = document.getElementById("recommendations-result");
+            
+                if (loading) loading.style.display = "block";
+                if (resultDiv) resultDiv.innerHTML = "";
+            
+                try {
+                    const response = await fetch("/generate_recommendations");
+                    const data = await response.json();
+                    if (loading) loading.style.display = "none";
+            
+                    if (data.error) {
+                        resultDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+                        return;
+                    }
+
+                    let delayCounter = 0;
+                    const createAndAppend = (tag, text, parent) => {
+                        const el = document.createElement(tag);
+                        if (text) el.textContent = text;
+                        parent.appendChild(el);
+                        el.classList.add('animated-item');
+                        el.style.animationDelay = `${delayCounter * 0.1}s`;
+                        delayCounter++; 
+                        return el;
+                    };
+                    
+                    createAndAppend('h4', 'AI Recommendations', resultDiv);
+
+                    const sections = {
+                        "Career Paths": data.career_paths,
+                        "Next Skills to Learn": data.next_skills,
+                        "Target Industries": data.industries,
+                        "Tips": data.tips
+                    };
+
+                    let contentFound = false;
+                    for (const title in sections) {
+                        const items = sections[title];
+                        if (items?.length) {
+                            contentFound = true;
+                            createAndAppend('h5', title, resultDiv);
+                            const ul = createAndAppend('ul', null, resultDiv);
+                            delayCounter--; 
+                            ul.style.animationDelay = `${delayCounter * 0.1}s`;
+                            
+                            items.forEach(itemText => {
+                                createAndAppend('li', itemText, ul);
+                            });
+                        }
+                    }
+
+                    if (!contentFound) {
+                        createAndAppend('p', 'Please wait for your Output', resultDiv);
+                    }
+            
+                } catch (err) {
+                    if (loading) loading.style.display = "none";
+                    resultDiv.innerHTML = `<p style="color:red;">An error occurred while fetching recommendations.</p>`;
+                    console.error('Recommendation Fetch Error:', err);
+                }
+            });
+        }
+    });
+</script>
+
+<!-- ===== PROFILE EDIT/UPDATE JS (only affects profile UI) ===== -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editBtn = document.getElementById('edit-profile-btn');
+    const displayView = document.getElementById('profile-display-view');
+    const editView = document.getElementById('profile-edit-view');
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    const updateStatus = document.getElementById('update-status');
+
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            displayView.style.display = 'none';
+            editView.style.display = 'block';
+            updateStatus.textContent = '';
+            // scroll a bit so form visible
+            editView.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            editView.style.display = 'none';
+            displayView.style.display = 'block';
+        });
+    }
+
+    if (editView) {
+        editView.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            updateStatus.textContent = 'Saving...';
+            updateStatus.style.color = '#ff9933';
+
+            const profileData = {
+                location: document.getElementById('edit-location').value,
+                currentRole: document.getElementById('edit-currentRole').value,
+                educationLevel: document.getElementById('edit-educationLevel').value,
+                fieldOfStudy: document.getElementById('edit-fieldOfStudy').value,
+                interests: document.getElementById('edit-interests').value,
+                careerPreferences: document.getElementById('edit-careerPreferences').value,
+                shortTermGoals: document.getElementById('edit-shortTermGoals').value,
+                longTermGoals: document.getElementById('edit-longTermGoals').value
+            };
+
+            try {
+                const res = await fetch('/update_profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(profileData)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    updateStatus.textContent = result.message;
+                    updateStatus.style.color = '#00ff66';
+                    // update display spans if present
+                    for (const key in result.user) {
+                        const span = displayView.querySelector(`span[data-key="${key}"]`);
+                        if (span) span.textContent = result.user[key] || 'N/A';
+                    }
+                    setTimeout(() => {
+                        editView.style.display = 'none';
+                        displayView.style.display = 'block';
+                    }, 1400);
+                } else {
+                    updateStatus.textContent = 'Error: ' + (result.error || 'Unknown');
+                    updateStatus.style.color = 'red';
+                }
+            } catch (err) {
+                updateStatus.textContent = 'Network error occurred';
+                updateStatus.style.color = 'red';
+            }
+        });
+    }
+});
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const generateBtn = document.getElementById("generate-btn");
+        const loading = document.getElementById("loading");
+        const resultDiv = document.getElementById("recommendations-result");
+
+        if (generateBtn) {
+            generateBtn.addEventListener("click", async () => {
+                loading.style.display = "block";
+                resultDiv.innerHTML = "";
+
+                try {
+                    const response = await fetch("/generate_recommendations");
+                    const data = await response.json();
+                    loading.style.display = "none";
+
+                    if (data.next_steps) {
+                        // FIXED: Wrapped the HTML content in backticks (`)
+                        resultDiv.innerHTML = `<h4>AI Recommendations</h4><p>${data.next_steps}</p>`;
+                    } else {
+                        // FIXED: Wrapped the HTML content in backticks (`)
+                        resultDiv.innerHTML = `<p>No recommendations available.</p>`;
+                    }
+                } catch (err) {
+                    loading.style.display = "none";
+                    // FIXED: Wrapped the HTML content in backticks (`)
+                    resultDiv.innerHTML = `<p style="color:red;">Error fetching recommendations.</p>`;
+                }
+            });
+        }
+    });
+
+    const analyzeBtn = document.getElementById('analyze-gap-btn');
+    const missingSkillsContainer = document.getElementById('missing-skills-container');
+
+    analyzeBtn.addEventListener('click', () => {
+        // 1. Show a loading state to the user
+        analyzeBtn.textContent = 'Analyzing...';
+        analyzeBtn.disabled = true;
+        missingSkillsContainer.innerHTML = '<p>Please wait, the AI is analyzing your skill gap...</p>';
+
+        // 2. Call the '/generate' route on your backend
+        fetch('/generate', {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 3. Display the results
+            if (data.skills && data.skills.length > 0) {
+                const skillsHtml = data.skills.map(skill => 
+                    `<span class="skill-badge-missing">${skill}</span>`
+                ).join('');
+                
+                missingSkillsContainer.innerHTML = `
+                    <h6>Recommended skills to learn:</h6>
+                    <div class="skills-container">${skillsHtml}</div>
+                `;
+            } else {
+                missingSkillsContainer.innerHTML = '<p><strong>Analysis complete!</strong> No significant skill gaps were found.</p>';
+            }
+            analyzeBtn.style.display = 'none'; // Hide button after analysis
+        })
+        .catch(error => {
+            // 4. Handle any errors
+            console.error('Skill gap analysis failed:', error);
+            missingSkillsContainer.innerHTML = '<p style="color: red;">An error occurred during analysis. Please try again.</p>';
+            analyzeBtn.textContent = 'Analyze Skill Gap';
+            analyzeBtn.disabled = false;
+        });
+    });
+
+
+
+
+
+</script>
+
+
+</body>
+</html>

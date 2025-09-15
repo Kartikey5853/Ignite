@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Roadmap</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        .section-container { max-width: 800px; margin: auto; }
+        .card { background-color: #2a2a2a; padding: 25px; border-radius: 10px; border: 1px solid #444; }
+        h2 { color: #ff9933; text-align: center; }
+
+        .btn {
+            padding: 12px 25px; border: none; border-radius: 8px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #ff6600, #ff9933); color: white;
+        }
+        .btn-primary:hover { box-shadow: 0 0 15px rgba(255,102,0,0.5); }
+        .btn:disabled { background: #555; cursor: not-allowed; }
+
+        #roadmap-result {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            line-height: 1.7;
+        }
+        #roadmap-result h3 { color: #ff9933; margin-top: 15px; }
+        #roadmap-result ul { margin-left: 20px; margin-top: 10px; }
+
+        #challenges { margin-top: 20px; }
+        #challenges h3 { color: #ff9933; }
+        .challenge-item { margin: 8px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="section-container">
+        <h2><a href="/dashboard">Ignite 🔥</a>
+        <style>
+        .section-container h2 a {
+            text-decoration: none;
+            color: #0778be;
+            color : #e5e6e3;
+            font-size: 40px;
+        }
+        </style></h2>
+        <div class="card">
+            <h5>Ignite Your Path Forward</h5>
+            <p>Click the button below to generate a personalized 3-month roadmap based on your skills and career goals. The AI will provide a step-by-step guide to help you reach the next level.</p>
+            
+            <button id="generate-roadmap-btn" class="btn btn-primary">
+                {% if profile_data and profile_data.roadmap_html %}
+                    Re-Generate My Roadmap
+                {% else %}
+                    Generate My Roadmap
+                {% endif %}
+            </button>
+            
+            <p id="roadmap-loading" style="display:none; margin-top: 15px;">⏳ The AI is building your personalized roadmap...</p>
+            
+            <div id="roadmap-result">
+                {% if profile_data and profile_data.roadmap_html %}
+                    {{ profile_data.roadmap_html | safe }}
+                {% endif %}
+            </div>
+
+            <!-- Challenges Section -->
+            <div id="challenges"></div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateBtn = document.getElementById("generate-roadmap-btn");
+        if (generateBtn) {
+            generateBtn.addEventListener("click", async () => {
+                const loading = document.getElementById("roadmap-loading");
+                const resultDiv = document.getElementById("roadmap-result");
+                const challengesDiv = document.getElementById("challenges");
+
+                loading.style.display = "block";
+                generateBtn.disabled = true;
+                resultDiv.innerHTML = "";
+                challengesDiv.innerHTML = "";
+            
+                try {
+                    const response = await fetch("{{ url_for('generate_roadmap_data') }}", {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        resultDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+                    } else {
+                        // Show markdown roadmap
+                        resultDiv.innerHTML = data.roadmap_html;
+
+                        // Show challenges as checkboxes
+                        if (data.challenges && Array.isArray(data.challenges)) {
+                            let html = `<h3>Challenges</h3><form>`;
+                            data.challenges.forEach((ch, idx) => {
+                                html += `
+                                    <div class="challenge-item">
+                                        <input type="checkbox" id="ch${idx}">
+                                        <label for="ch${idx}">${ch}</label>
+                                    </div>
+                                `;
+                            });
+                            html += `</form>`;
+                            challengesDiv.innerHTML = html;
+                        }
+                    }
+            
+                } catch (err) {
+                    resultDiv.innerHTML = `<p style="color:red;">An error occurred. Please try again.</p>`;
+                } finally {
+                    loading.style.display = "none";
+                    generateBtn.disabled = false;
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>

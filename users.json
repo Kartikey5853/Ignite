@@ -1,0 +1,41 @@
+{
+    "kartikey": {
+        "password": "123",
+        "location": "hyderabad",
+        "educationLevel": "bachelors",
+        "fieldOfStudy": "Data Science ",
+        "currentRole": "Student",
+        "careerPreferences": "",
+        "interests": "Drawing",
+        "shortTermGoals": "",
+        "longTermGoals": ""
+    },
+    "RAJ": {
+        "password": "123",
+        "location": "hyderabad",
+        "currentRole": "Student",
+        "educationLevel": "bachelors",
+        "fieldOfStudy": "Data Science ",
+        "interests": "NLP , LLMS",
+        "careerPreferences": "Data scientist ",
+        "shortTermGoals": "",
+        "longTermGoals": ""
+    },
+    "RAJ PANDEY": {
+        "password": "1234"
+    },
+    "manthra": {
+        "password": "kartikey",
+        "location": "hyderabad",
+        "currentRole": "Student",
+        "educationLevel": "bachelors",
+        "fieldOfStudy": "Data Science ",
+        "interests": "gaming ",
+        "careerPreferences": "",
+        "shortTermGoals": "",
+        "longTermGoals": ""
+    },
+    "Nivesh M.": {
+        "password": "1234"
+    }
+}

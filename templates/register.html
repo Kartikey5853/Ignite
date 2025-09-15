@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register - Ignite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {  
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #0d0d0d;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 10px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #ff6600;
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px rgba(255,102,0,0.8);
+    }
+
+    p.subtitle {
+      text-align: center;
+      color: #aaa;
+      margin-bottom: 30px;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    }
+
+    .card h5 {
+      margin-bottom: 20px;
+      color: #ff6600;
+      font-size: 1.2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #262626;
+      color: white;
+      margin-bottom: 18px;
+      font-size: 0.95rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border: 1px solid #ff6600;
+      background: #1f1f1f;
+    }
+
+    textarea {
+      resize: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #ff6600, #ff9933);
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .login-link {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .login-link a {
+      color: #ff6600;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* Flash messages */
+    .alert {
+      margin-bottom: 20px;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .alert.success { background: rgba(0,200,0,0.2); color: #00ff66; }
+    .alert.danger { background: rgba(200,0,0,0.2); color: #ff4444; }
+
+    @media (max-width: 600px) {
+      .card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Join Ignite 🔥</h2>
+    <p class="subtitle">Create your account and start your career transformation journey</p>
+
+    
+
+    <form method="post">
+      <!-- Personal Info -->
+      <div class="card">
+        <h5>Personal Information</h5>
+        <label for="username">Full Name</label>
+        <input type="text" id="username" name="username" required>
+
+        
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="location">Location</label>
+        <input type="text" id="location" name="location" placeholder="City, Country">
+      </div>
+
+      <!-- Education -->
+      <div class="card">
+        <h5>Education & Experience</h5>
+        <label for="educationLevel">Education Level</label>
+        <select id="educationLevel" name="educationLevel">
+          <option value="">Select education level</option>
+          <option value="high-school">High School</option>
+          <option value="bachelors">Bachelor's Degree</option>
+          <option value="masters">Master's Degree</option>
+          <option value="phd">PhD</option>
+          <option value="other">Other</option>
+        </select>
+
+        <label for="fieldOfStudy">Field of Study</label>
+        <input type="text" id="fieldOfStudy" name="fieldOfStudy" placeholder="e.g., Computer Science">
+
+        <label for="currentRole">Current Role</label>
+        <input type="text" id="currentRole" name="currentRole" placeholder="e.g., Student, Developer">
+      </div>
+
+      <!-- Career -->
+      <div class="card">
+        <h5>Career Aspirations</h5>
+        <label for="careerPreferences">Career Preferences</label>
+        <input type="text" id="careerPreferences" name="careerPreferences" placeholder="e.g., Technology, Healthcare">
+
+        <label for="interests">Interests</label>
+        <textarea id="interests" name="interests" rows="2" placeholder="Tell us about your interests..."></textarea>
+
+        <label for="shortTermGoals">Short-term Goals (1-2 years)</label>
+        <textarea id="shortTermGoals" name="shortTermGoals" rows="2" placeholder="What do you want to achieve in 1-2 years?"></textarea>
+
+        <label for="longTermGoals">Long-term Goals (3-5 years)</label>
+        <textarea id="longTermGoals" name="longTermGoals" rows="2" placeholder="Where do you see yourself in 3-5 years?"></textarea>
+      </div>
+
+      <button type="submit">Create Your Ignite Account</button>
+
+      <div class="login-link">
+        Already have an account? <a href="{{ url_for('login') }}">Sign in here</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
